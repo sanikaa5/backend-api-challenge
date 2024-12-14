@@ -23,8 +23,8 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
         'sudo apt update && sudo apt install -y python3-pip'
-        'pip3 install --user flask'
-        'sudo /home/azureuser/flask-env/bin/python /home/azureuser/hello.py'
+        'python3 -m venv flask-env && source flask-env/bin/activate && pip install flask'
+        'python /home/azureuser/hello.py'
         EOF
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
