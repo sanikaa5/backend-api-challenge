@@ -28,7 +28,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
           cd /home/azureuser
-          sudo apt update
+          sudo apt update -y
           sudo apt install -y python3-pip
           pip3 install flask
           pkill -f "python3 hello.py" || true
