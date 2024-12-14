@@ -22,7 +22,7 @@ jobs:
 
     - name: Deploy to VM
       run: |
-        scp -i ~/.ssh/id_rsa ./.ssh/challenge.pem azureuser@20.127.206.174:/home/azureuser/.ssh/
+        scp -i ~/.ssh/id_rsa ~/.ssh/challenge.pem azureuser@20.127.206.174:/home/azureuser/.ssh/
         ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "sudo apt update && sudo apt install python3-pip -y"
         ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "pip3 install --upgrade pip"
         ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "pip3 install flask"
