@@ -14,13 +14,14 @@ jobs:
 
       - name: Set Up SSH Key
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Deploy Application
+      - name: Deploy to VM
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@192.168.80.115 <<EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 <<EOF
           taskkill /IM python.exe /F || true
-          cd C:\Users\Sanika\Dhakite\.ssh
+          cd /path/to/your/app
           nohup python hello.py &
           EOF
