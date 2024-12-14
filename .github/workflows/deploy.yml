@@ -9,16 +9,16 @@ jobs:
   deploy:
     runs-on: windows-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Deploy to VM
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        git remote set-url origin https://github.com/sanikaa5/backend-api-challenge.git
-        git pull origin main
-        # Stop any existing `hello.py` process
-        ssh azureuser@192.168.80.115 "pkill -f 'python3 hello.py' || true"
-        # Start the new Flask application
-        ssh azureuser@192.168.80.115 "nohup python3 /path/to/your/app/hello.py &"
+      - name: Deploy to VM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://github.com/sanikaa5/backend-api-challenge.git
+          git pull origin main
+          # Stop any existing `hello.py` process
+          ssh azureuser@192.168.80.115 "taskkill /IM python.exe /F || true"
+          # Start the new Flask application
+          ssh azureuser@192.168.80.115 "nohup python3 /path/to/your/app/hello.py &"
