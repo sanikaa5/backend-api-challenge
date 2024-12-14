@@ -7,27 +7,18 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up SSH Key
-        run: |
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Deploy to VM
         env:
-          VM_IP: "192.168.80.115" # Use the correct VM IP
-          USERNAME: "azureuser"   # Replace with the actual username
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USERNAME}@${VM_IP} <<EOF
-          sudo apt update
-          sudo apt install python3-pip -y
-          sudo pip3 install flask
-          pkill -f "python3 app.py" || true
-          nohup python3 app.py &
-          EOF
-
-
+          git remote set-url origin https://github.com/sanikaa5/backend-api-challenge.git
+          git pull origin main
+          # Your deployment commands go here
