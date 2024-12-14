@@ -32,3 +32,4 @@ jobs:
     - name: Verify Deployment
       run: |
         curl -s http://20.127.206.174/sayHello
+
