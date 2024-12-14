@@ -1,3 +1,5 @@
+# .github/workflows/deploy-api.yml
+
 name: Deploy API
 
 on:
@@ -9,19 +11,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Set Up SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+    - name: Set up SSH
+      run: |
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      env:
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to VM
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 <<EOF
-          taskkill /IM python.exe /F || true
-          cd /path/to/your/app
-          nohup python hello.py &
-          EOF
+    - name: Deploy to VM
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
+        cd /home/azureuser
+        sudo apt update
+        sudo apt install -y python3-pip
+        pip3 install flask
+        pkill -f "python3 hello.py" || true
+        nohup python3 /home/azureuser/hello.py &
+        EOF
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
