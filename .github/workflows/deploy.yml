@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy to VM
 
 on:
   push:
@@ -11,26 +11,26 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
-    - name: Set up SSH Key
+    - name: Set up SSH Agent
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 20.127.206.174 >> ~/.ssh/known_hosts
 
-    - name: Deploy to VM
+    - name: Connect to VM and deploy
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
-        sudo apt update && sudo apt install -y python3-pip
+        sudo apt update
+        sudo apt install -y python3-pip
         python3 -m venv flask-env
         source flask-env/bin/activate
         pip install flask
-        python /home/azureuser/hello.py
+        python /home/azureuser/hello.py --host=0.0.0.0 --port=80
         EOF
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    - name: Verify Deployment
-      run: |
-        curl -s http://20.127.206.174/sayHello
