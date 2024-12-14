@@ -7,18 +7,20 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Deploy to VM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Up SSH Key
         run: |
-          git remote set-url origin https://github.com/sanikaa5/backend-api-challenge.git
-          git pull origin main
-          # Stop any existing `hello.py` process
-          ssh azureuser@192.168.80.115 "taskkill /IM python.exe /F || true"
-          # Start the new Flask application
-          ssh azureuser@192.168.80.115 "nohup python3 /path/to/your/app/hello.py &"
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy Application
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@192.168.80.115 <<EOF
+          taskkill /IM python.exe /F || true
+          cd C:\Users\Sanika\Dhakite\.ssh
+          nohup python hello.py &
+          EOF
