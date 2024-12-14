@@ -1,34 +1,48 @@
-name: Deploy to VM
+name: Deploy Flask App
 
 on:
   push:
     branches:
-      - main
+      - main  # Adjust to your default branch name
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+    # Step 1: Check out the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Set up SSH Agent
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    # Step 2: Set up SSH for the VM
+    - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 20.127.206.174 >> ~/.ssh/known_hosts
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/challenge.pem
+        chmod 600 ~/.ssh/challenge.pem
+        echo "Host 20.127.206.174
+              StrictHostKeyChecking no
+              User azureuser
+              IdentityFile ~/.ssh/challenge.pem" > ~/.ssh/config
+        chmod 600 ~/.ssh/config
 
-    - name: Connect to VM and deploy
+    # Step 3: Install dependencies and deploy the app
+    - name: Deploy to VM
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
+        ssh azureuser@20.127.206.174 << 'EOF'
+        # Ensure Python and pip are installed
         sudo apt update
-        sudo apt install -y python3-pip
-        python3 -m venv flask-env
-        source flask-env/bin/activate
+        sudo apt install -y python3-pip python3-venv
+
+        # Set up a virtual environment and Flask app
+        python3 -m venv ~/flask-env
+        source ~/flask-env/bin/activate
         pip install flask
-        python /home/azureuser/hello.py
+
+        # Stop any running app (optional)
+        sudo pkill -f hello.py || true
+
+        # Deploy and run the app
+        nohup sudo ~/flask-env/bin/python /home/azureuser/hello.py > ~/flask-app.log 2>&1 &
         EOF
+      shell: bash
