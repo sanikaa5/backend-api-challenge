@@ -8,21 +8,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Set up SSH
       run: |
+        mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+
+    - name: Deploy to VM
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
+        'sudo apt update && sudo apt install -y python3-pip'
+        'pip3 install --user flask'
+        'sudo /home/azureuser/flask-env/bin/python /home/azureuser/hello.py'
+        EOF
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to VM
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Verify Deployment
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
-          sudo /home/azureuser/flask-env/bin/python /home/azureuser/hello.py --host=0.0.0.0 --port=8080
-        EOF
+        curl -s http://20.127.206.174/sayHello
