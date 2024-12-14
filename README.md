@@ -1,4 +1,4 @@
-### README for Backend API Deployment Using GitHub Actions
+### Backend API Deployment Using GitHub Actions
 
 ---
 
