@@ -1,4 +1,5 @@
 name: Deploy API
+
 on:
   push:
     branches:
@@ -8,21 +9,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH
-      run: |
-        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+      - name: Set up SSH Key
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-    - name: Deploy to VM
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 <<EOF
-        sudo apt update
-        sudo apt install python3-pip -y
-        sudo pip3 install flask
-        pkill -f "python3 app.py" || true
-        nohup python3 app.py &
-        EOF
+      - name: Deploy to VM
+        env:
+          VM_IP: "192.168.80.115" # Use the correct VM IP
+          USERNAME: "azureuser"   # Replace with the actual username
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USERNAME}@${VM_IP} <<EOF
+          sudo apt update
+          sudo apt install python3-pip -y
+          sudo pip3 install flask
+          pkill -f "python3 app.py" || true
+          nohup python3 app.py &
+          EOF
+
 
