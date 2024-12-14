@@ -22,8 +22,13 @@ jobs:
 
     - name: Deploy to VM
       run: |
-        scp -i ~/.ssh/id_rsa ~/.ssh/challenge.pem azureuser@20.127.206.174:/home/azureuser/.ssh/
-        ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "sudo apt update && sudo apt install python3-pip -y"
-        ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "pip3 install --upgrade pip"
-        ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "pip3 install flask"
-        ssh -i ~/.ssh/id_rsa azureuser@20.127.206.174 "nohup python3 /home/azureuser/hello.py &"
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 <<EOF
+        sudo apt update
+        sudo apt install python3-pip -y
+        sudo pip3 install --upgrade pip
+        sudo pip3 install flask
+        pkill -f "python3 /home/azureuser/hello.py" || true
+        nohup /home/azureuser/flask-env/bin/python /home/azureuser/hello.py --host=0.0.0.0 --port=80 &
+        EOF
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
