@@ -10,27 +10,28 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ env.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      env:
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to VM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
-          cd /home/azureuser
-          sudo apt update -y
-          sudo apt install -y python3-pip
-          pip3 install flask
-          pkill -f "python3 hello.py" || true
-          nohup python3 /home/azureuser/hello.py &
-          EOF
+    - name: Deploy to VM
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.127.206.174 << EOF
+        sudo apt update
+        sudo apt install -y python3 python3-pip
+        pip3 install --upgrade pip
+        pip3 install flask
+        pkill -f "python3 hello.py" || true
+        nohup /home/azureuser/flask-env/bin/python /home/azureuser/hello.py --host=0.0.0.0 --port=80 &
+        EOF
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
